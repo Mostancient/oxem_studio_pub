@@ -6,84 +6,66 @@
 
 <?php
 
-class Cow { // Описываем объект КОРОВА
+//  добавление новых типов животных в которую не требовало бы модификации класса самой фермы.
+//  увидеть реализацию механизма наследования.
 
-    public $milk; // делаем свойство коровы доступным из любого места (глобальная область)
-    public $id; // делаем свойство коровы доступным из любого места (глобальная область)
-
-    public function __construct($id){  // определяем конструктор коровы, который будет выплнен при создании КОРОВЫ
-        $this->id = $id; // присваеваем id коровке
-        echo "Создана корова ID:".$this->id."<br>"; // соообщаем ID созданной коровы
+abstract class AnimalsParam { // создаём абстрактный класс
+    public function __construct($type, $id, $product_name, $units, $harvest_min, $harvest_max){  // определяем конструктор с необходимыми входящими данными животных
+        $this->type = $type; // название типа животного
+        $this->id = "животноеID".$id; // присваеваем id животному
+        $this->product_name = $product_name; // наименование продукции производимого животным
+        $this->units = $units; // единица измерения продукции
+        $this->harvest_min = $harvest_min; // минимально возможное количество продукции с 1 животного
+        $this->harvest_max = $harvest_max; // максимально возможнон количество продукции с 1 животного
     }
 
-    public function doyka(){ // метод доит корову
-        return $this->milk = rand (8, 12); // определяем надой из указанного диапозона =)
+    public function harvesting(){ // собираем продукцию с объекта животного
+        return $this->products = rand ($this->harvest_min, $this->harvest_max); // определяем колличество полученной продукции из возможног диапозона
     }
 }
 
-class Hen { // Описываем объект КУРИЦА
-  public $eggs; // делаем свойство коровы доступным из любого места (глобальная область)
-  public $id; // делаем свойство коровы доступным из любого места (глобальная область)
-
-  public function __construct($id){  // определяем конструктор коровы, который будет выплнен при создании КОРОВЫ
-      $this->id = $id; // присваеваем id коровке
-      echo "Создана курица ID:".$this->id."<br>"; // сообщаем ID созданной курицы
-  }
-
-  public function collect_eggs(){ // метод доит корову
-      return $this->eggs = rand (0, 1); // определяем надой из указанного диапозона =)
-  }
+class NewAnimals extends AnimalsParam{ // Создаём дочерний класс для создания объектов животных
 
 }
 
-class Crib { // Описываем объект ХЛЕВ
+class NewCrib { // Описываем класс ХЛЕВ
 
     # делаем свойства доступными методам собственного класса
-    protected $num_cows;
-    protected $num_hens;
-    protected $cow;
-    protected $hen;
-    protected $total_milk;
-    protected $total_eggs;
+    protected $regAnimals; // используем для хранения всех зарегистрированных животных в хлеву
+    protected $regProducts; // используем для хранения суммарных значений продукции по каждому типу животных
 
     public function __construct(){ // определяем конструктор, который будет выплнен при создании объекта ХЛЕВ
-        echo "ХЛЕВ создан, можно заселять животных <br>"; // сообщаем, что хлев создан и можно заселять животных
+        echo "Новый ХЛЕВ создан, можно заселять животных! <br><br>"; // сообщаем, что хлев создан и можно заселять животных
     }
 
-    function add_cows($num_cows){ // метод добавления коров в хлев
-        $this->num_cows = $num_cows; // получаем входящие значение нужного количества коров и присваеваем его свойству объекта
-        for ($i=1; $i < $this->num_cows+1; $i++) {
-            $this->cow[$i] = new Cow($i); // создаём нужный массив коров
-        }
-    }
-
-    function add_hens($num_hens){ // метод добавления куриц в хлев
-        $this->num_hens = $num_hens; // получаем входящие значение нужного количества куриц и присваеваем его свойству объекта
-        for ($i=1; $i < $this->num_hens+1; $i++) {
-            $this->hen[$i] = new Hen($i); // создаём нужный массив куриц
+    function AddAnimals($type, $counts, $product_name, $units, $harvest_min, $harvest_max){ // метод добавления животных в хлев
+        for ($i=1; $i < $counts+1; $i++) {
+            $this->regAnimals[$type][$i] = new NewAnimals($type, $i, $product_name, $units, $harvest_min, $harvest_max); // создаём массив с зарегистрированными животными
         }
     }
 
-    function product_sbor(){ // метод сбора продукции
-        foreach ($this->cow as $key => $value) { // собираем надой с массива всех коров
-            $this->total_milk = $this->total_milk + $value->doyka(); // доим корову
-            echo "\n\n Надой с коровы id".$value->id." \n\n составил литров:".$value->milk."<br>";  // выводим надой с одной коровы
-            $value->milk = 0; // после дойки сбрасываем количества молока в корове =)
+    function ProductCollection(){ // функция сбора продукции со всех зарегистрированных в хлеву животных
+        echo "Зарегистрированы животные:<br> ";
+        foreach ($this->regAnimals as $key => $value) { // перебор всех типов зарегистрированных в хлеву животных
+            echo "<br>".$key." — ".count($value)." шт. <br>";  // выводим тип и колличетсво животных
+            foreach ($value as $animal){ // перебор животных внутри типа
+                echo $animal->id." принесло ".$animal->product_name." — ".$animal->harvesting()." ".$animal->units."<br>";
+                $this->regProducts[$key]['total']=$this->regProducts[$key]['total'] + $animal->products; // суммируем всю продукцию по типу живтных
+                $this->regProducts[$key]['product_name'] = $animal->product_name; // название продукции для понятности
+                $this->regProducts[$key]['units'] = $animal->units; // единица изменения продукции для понятности
+            }
         }
-
-        foreach ($this->hen as $key => $value) { // собираем яйца с массива всех кур
-            $this->total_eggs = $this->total_eggs + $value->collect_eggs(); // собираяем яйца с курицы
-            echo "\n\n С курицы id".$value->id." \n\n собрали яиц:".$value->eggs."<br>"; // выводим количество яиц с одной курицы
-            $value->eggs = 0; // после сбрасываем количество яиц в курице =)
+        foreach ($this->regProducts as $key => $value){ // вывод суммарных значений продукции
+            echo "<b>Итого ".$value['product_name']." ".$key.": ".$value['total']." ".$value['units']."</b> <br>";  // выводим тип и колличетсво животных
         }
-        echo "\n\n Итого собрано ".$this->total_eggs." яиц и ".$this->total_milk." литров молока.";
     }
 }
 
-$crib = new Crib(); // создаём объект ХЛЕВ
-$crib->add_cows(10); // Создаём коров и добавляем их в хлев
-$crib->add_hens(20); // Создаём куриц и добавляем их в хлев
-$crib->product_sbor(); // собираем с хлева продукцию
+$NewCrib = new NewCrib(); // создаём новый ХЛЕВ
+$NewCrib->AddAnimals("страусов", 6, "яиц", "шт.", 1, 3); // Создаём коров и добавляем их в хлев
+$NewCrib->AddAnimals("куриц", 20, "яиц", "шт.", 0, 1); // Создаём коров и добавляем их в хлев
+$NewCrib->AddAnimals("коров", 10, "молока", "л.", 8, 12); // Создаём коров и добавляем их в хлев
+$NewCrib->ProductCollection(); // Собираем всю продукцию с животных в хлеву
  ?>
 
 </body>
